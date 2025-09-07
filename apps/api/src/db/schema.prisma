@@ -1,0 +1,35 @@
+// Prisma schema for Cloudflare D1
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id             String   @id
+  templateId     String
+  title          String?
+  createdAt      DateTime @default(now())
+  lastAccessedAt DateTime @default(now())
+  
+  items          Item[]
+  
+  @@map("projects")
+}
+
+model Item {
+  id          String  @id
+  projectId   String
+  name        String
+  imageUrl    String?
+  description String
+  order       Int
+  
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@map("items")
+}
