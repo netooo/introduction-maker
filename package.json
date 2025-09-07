@@ -1,0 +1,16 @@
+{
+  "name": "introduction-maker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "pnpm run build --recursive",
+    "dev": "pnpm run dev --recursive",
+    "lint": "pnpm run lint --recursive",
+    "type-check": "pnpm run type-check --recursive"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "packageManager": "pnpm@8.0.0"
+}
