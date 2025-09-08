@@ -28,11 +28,35 @@ export default function CreatePage() {
   const router = useRouter()
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
 
-  const handleCreateProject = () => {
-    if (selectedTemplate) {
-      // TODO: プロジェクト作成APIを呼び出し
-      const projectId = crypto.randomUUID()
-      router.push(`/edit/${projectId}`)
+  const handleCreateProject = async () => {
+    if (!selectedTemplate) return
+
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          templateId: selectedTemplate,
+          title: `${templates.find(t => t.id === selectedTemplate)?.name}プロジェクト`,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('プロジェクトの作成に失敗しました')
+      }
+
+      const data = await response.json()
+      
+      if (data.success) {
+        router.push(`/edit/${data.data.id}`)
+      } else {
+        throw new Error(data.error || 'プロジェクトの作成に失敗しました')
+      }
+    } catch (error) {
+      console.error('Error creating project:', error)
+      alert('プロジェクトの作成に失敗しました。もう一度お試しください。')
     }
   }
 
