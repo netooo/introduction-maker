@@ -5,7 +5,7 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:8787'
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:56370'
     
     return [
       {

@@ -78,6 +78,24 @@ export class ProjectService {
     return item
   }
 
+  async createItemWithTempImage(projectId: string, data: CreateItemInput, tempItemId?: string) {
+    const item = await this.createItem(projectId, data)
+    
+    // 一時画像がある場合は移動
+    if (tempItemId) {
+      try {
+        // ImageServiceを使って一時画像を移動
+        // 注: この時点でR2やenv参照が必要だが、ProjectServiceからは直接アクセスできないため
+        // フロントエンド側で画像移動を処理することを想定
+        console.log(`Temp image ${tempItemId} should be moved to item ${item.id}`)
+      } catch (error) {
+        console.warn('Failed to move temp image:', error)
+      }
+    }
+
+    return item
+  }
+
   async updateItem(id: string, data: UpdateItemInput) {
     const item = await this.db.item.update({
       where: { id },

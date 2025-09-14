@@ -60,6 +60,19 @@ projects.get('/:id', validateParam(UUIDSchema), async (c) => {
       }, 404)
     }
     
+    // デバッグ用ログ
+    console.log('Project data:', JSON.stringify({
+      id: project.id,
+      title: project.title,
+      items: project.items.map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        imageUrl: item.imageUrl,
+        order: item.order
+      }))
+    }, null, 2))
+    
     return c.json({
       success: true,
       data: project,
@@ -123,6 +136,17 @@ projects.post('/:id/items', validateParam(UUIDSchema), validateJson(CreateItemSc
   
   try {
     const item = await service.createItem(projectId, data)
+    
+    // 一時画像を実際のアイテムに移動（temp-item-0から新しいitemIdに）
+    try {
+      const { ImageService } = await import('../services/image.service')
+      const imageService = new ImageService(prisma, c.env.R2, c.env)
+      await imageService.moveTempImageToItem(projectId, 'temp-item-0', item.id)
+      console.log(`Successfully moved temp image to item ${item.id}`)
+    } catch (imageError) {
+      console.warn('Failed to move temp image, continuing without image:', imageError)
+    }
+    
     return c.json({
       success: true,
       data: item,

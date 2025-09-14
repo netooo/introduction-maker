@@ -5,3 +5,4 @@ export type { Project } from './types/project';
 
 // Constants
 export { TEMPLATES, TEMPLATE_LIST } from './constants/templates';
+export { IMAGE_CONFIG, type ImageVariant, type AllowedImageFormat } from './constants/images';

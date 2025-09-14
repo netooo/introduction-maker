@@ -1,7 +1,16 @@
 import type { R2Bucket } from '@cloudflare/workers-types'
 
 export class R2StorageService {
-  constructor(private bucket: R2Bucket) {}
+  public bucket: R2Bucket
+  public env?: any
+  
+  constructor(
+    bucket: R2Bucket, 
+    env?: any
+  ) {
+    this.bucket = bucket
+    this.env = env
+  }
 
   async uploadImage(
     key: string,
@@ -15,8 +24,9 @@ export class R2StorageService {
         },
       })
       
-      // R2のパブリックURLを生成（実際の設定に応じて調整）
-      return `https://pub-example.r2.dev/${key}`
+      // 開発環境ではローカルAPIサーバー経由でR2画像を提供
+      const baseUrl = this.getBaseUrl()
+      return `${baseUrl}/api/images/r2/${encodeURIComponent(key)}`
     } catch (error) {
       console.error('R2 upload error:', error)
       throw new Error('Failed to upload image to R2')
@@ -36,7 +46,8 @@ export class R2StorageService {
     try {
       const object = await this.bucket.head(key)
       if (object) {
-        return `https://pub-example.r2.dev/${key}`
+        const baseUrl = this.getBaseUrl()
+        return `${baseUrl}/api/images/r2/${encodeURIComponent(key)}`
       }
       return null
     } catch (error) {
@@ -57,5 +68,15 @@ export class R2StorageService {
   validateImageSize(size: number): boolean {
     const maxSize = 5 * 1024 * 1024 // 5MB
     return size <= maxSize
+  }
+
+  private getBaseUrl(): string {
+    // 本番環境では環境変数から取得
+    if (this.env?.API_BASE_URL) {
+      return this.env.API_BASE_URL
+    }
+    
+    // 開発環境のデフォルト
+    return 'http://localhost:8787'
   }
 }
