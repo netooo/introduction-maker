@@ -60,18 +60,6 @@ projects.get('/:id', validateParam(UUIDSchema), async (c) => {
       }, 404)
     }
     
-    // デバッグ用ログ
-    console.log('Project data:', JSON.stringify({
-      id: project.id,
-      title: project.title,
-      items: project.items.map(item => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        imageUrl: item.imageUrl,
-        order: item.order
-      }))
-    }, null, 2))
     
     return c.json({
       success: true,

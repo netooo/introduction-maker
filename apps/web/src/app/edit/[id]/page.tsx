@@ -84,15 +84,16 @@ export default function EditPage() {
 
   const handleSave = async () => {
     if (!project) return
-    
+
     try {
       // Save or create items for the project
       const savePromises = project.items
-        .filter(item => item.name.trim() !== '' || item.description.trim() !== '') // Only save items with content
+        .filter(item => item.name.trim() !== '' || item.description.trim() !== '' || item.imageUrl.trim() !== '')
         .map(async (item) => {
           const itemData = {
             name: item.name,
             description: item.description,
+            imageUrl: item.imageUrl,
             order: item.order,
           }
 
@@ -103,11 +104,11 @@ export default function EditPage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(itemData),
             })
-            
+
             if (!response.ok) {
               throw new Error(`Failed to create item: ${item.name}`)
             }
-            
+
             return response.json()
           } else {
             // Update existing item
@@ -116,11 +117,11 @@ export default function EditPage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(itemData),
             })
-            
+
             if (!response.ok) {
               throw new Error(`Failed to update item: ${item.name}`)
             }
-            
+
             return response.json()
           }
         })
@@ -145,8 +146,8 @@ export default function EditPage() {
 
   const handleImageUpload = (itemIndex: number, imageUrl: string) => {
     if (!project) return
-    
-    const updatedItems = project.items.map((item, index) => 
+
+    const updatedItems = project.items.map((item, index) =>
       index === itemIndex ? { ...item, imageUrl } : item
     )
     setProject({ ...project, items: updatedItems })

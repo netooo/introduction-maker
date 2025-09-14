@@ -31,7 +31,8 @@ export const TemplateBase: React.FC<TemplateProps & {
 }) => {
   const currentItem = items[currentIndex]
 
-  if (!currentItem) return null
+  // Allow templates to render even without items (for placeholder support)
+  // if (!currentItem) return null
 
   return (
     <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black overflow-hidden">

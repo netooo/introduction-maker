@@ -13,16 +13,17 @@ export const UpdateProjectSchema = z.object({
 
 // Item schemas
 export const CreateItemSchema = z.object({
-  name: z.string().min(1).max(100),
+  name: z.string().max(100),
   description: z.string().max(500),
+  imageUrl: z.string().optional(),
   order: z.number().int().min(0),
 })
 
 export const UpdateItemSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
+  name: z.string().max(100).optional(),
   description: z.string().max(500).optional(),
   order: z.number().int().min(0).optional(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().optional(),
 })
 
 // Image upload schema

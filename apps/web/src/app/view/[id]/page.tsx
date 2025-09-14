@@ -96,15 +96,18 @@ export default function ViewPage() {
   }
 
   useEffect(() => {
-    if (isPlaying && project && currentItemIndex < project.items.length - 1) {
+    if (isPlaying && project) {
       const timer = setTimeout(() => {
-        setCurrentItemIndex(prev => prev + 1)
-      }, 4000) // 4秒ごとに次の項目へ
+        setCurrentItemIndex(prev => {
+          // 最後の項目に到達したら最初に戻る（ループ再生）
+          if (prev >= project.items.length - 1) {
+            return 0
+          }
+          return prev + 1
+        })
+      }, 2000) // 2秒ごとに次の項目へ
 
       return () => clearTimeout(timer)
-    } else if (isPlaying && project && currentItemIndex >= project.items.length - 1) {
-      // 最後の項目まで表示したら停止
-      setTimeout(() => setIsPlaying(false), 4000)
     }
   }, [isPlaying, currentItemIndex, project])
 
@@ -146,88 +149,111 @@ export default function ViewPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="fixed inset-0 bg-black overflow-hidden">
       {/* Template Renderer */}
-      <TemplateRenderer
-        template={project.template}
-        items={project.items}
-        currentIndex={currentItemIndex}
-        isPlaying={isPlaying}
-      />
+      <div className="absolute inset-0">
+        <TemplateRenderer
+          template={project.template}
+          items={project.items}
+          currentIndex={currentItemIndex}
+          isPlaying={isPlaying}
+        />
+      </div>
 
       {/* Play Button Overlay (when not playing) */}
       {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50">
           <div className="text-center">
-            <h1 className="text-6xl font-bold mb-6 text-white bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-              Introduction Maker
-            </h1>
-            <p className="text-2xl text-gray-200 mb-12 max-w-md mx-auto">
-              {project.template.name}テンプレートの紹介映像をお楽しみください
-            </p>
-            <button
-              onClick={handlePlay}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-12 py-6 rounded-2xl text-xl font-semibold flex items-center mx-auto shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105"
-            >
-              <Play className="w-8 h-8 mr-3" />
-              再生開始
-            </button>
+            <div className="mb-8 p-8 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20">
+              <h1 className="text-5xl font-bold mb-4 text-white">
+                {project.template.name}
+              </h1>
+              <p className="text-xl text-gray-300 mb-8 max-w-md mx-auto">
+                {project.items.filter(item => item.name !== `項目 ${item.order + 1}`).length}人の紹介映像
+              </p>
+              <button
+                onClick={handlePlay}
+                className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black px-12 py-4 rounded-xl text-lg font-bold flex items-center mx-auto shadow-2xl hover:shadow-yellow-500/25 transition-all duration-300 transform hover:scale-105"
+              >
+                <Play className="w-6 h-6 mr-3" />
+                プレゼンテーション開始
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Enhanced Control Panel */}
+      {/* Minimalist Control Panel */}
       {isPlaying && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-6 bg-black/80 backdrop-blur-md rounded-2xl px-8 py-4 shadow-2xl border border-white/10">
-          <button 
-            onClick={handlePause} 
-            className="text-white hover:text-blue-400 transition-colors duration-200 p-2 hover:bg-white/10 rounded-lg"
-          >
-            <Pause className="w-6 h-6" />
-          </button>
-          
-          <button 
-            onClick={handleReset} 
-            className="text-white hover:text-green-400 transition-colors duration-200 p-2 hover:bg-white/10 rounded-lg"
-          >
-            <RotateCcw className="w-6 h-6" />
-          </button>
-          
-          <div className="w-px h-6 bg-white/20" />
-          
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-40">
+          <div className="flex items-center space-x-4 bg-black/60 backdrop-blur-md rounded-full px-6 py-3 shadow-2xl">
+            <button 
+              onClick={handlePause} 
+              className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
+              title="一時停止"
+            >
+              <Pause className="w-5 h-5" />
+            </button>
+            
+            <button 
+              onClick={handleReset} 
+              className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
+              title="最初から再生"
+            >
+              <RotateCcw className="w-5 h-5" />
+            </button>
+            
+            <div className="w-px h-4 bg-white/30" />
+            
+            {/* Progress Indicator */}
+            <div className="flex items-center space-x-2">
+              <div className="text-xs text-yellow-400 font-mono min-w-[45px] text-center">
+                {String(currentItemIndex + 1).padStart(2, '0')}/{String(project.items.length).padStart(2, '0')}
+              </div>
+              <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-yellow-400 to-orange-400 transition-all duration-300 ease-out"
+                  style={{ width: `${((currentItemIndex + 1) / project.items.length) * 100}%` }}
+                />
+              </div>
+            </div>
+            
+            <div className="w-px h-4 bg-white/30" />
+            
+            <button 
+              onClick={handleShare} 
+              className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
+              title="共有"
+            >
+              <Share className="w-4 h-4" />
+            </button>
+            
+            <Link
+              href={`/edit/${projectId}`}
+              className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
+              title="編集"
+            >
+              <Edit className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Simple Control Panel when not playing */}
+      {!isPlaying && (
+        <div className="absolute top-6 right-6 flex items-center space-x-3 z-40">
           <button 
             onClick={handleShare} 
-            className="text-white hover:text-purple-400 transition-colors duration-200 p-2 hover:bg-white/10 rounded-lg"
+            className="text-white/80 hover:text-white transition-all duration-200 p-3 hover:bg-white/10 rounded-full backdrop-blur-sm"
+            title="共有"
           >
-            <Share className="w-6 h-6" />
-          </button>
-          
-          <Link
-            href={`/edit/${projectId}`}
-            className="text-white hover:text-yellow-400 transition-colors duration-200 p-2 hover:bg-white/10 rounded-lg"
-          >
-            <Edit className="w-6 h-6" />
-          </Link>
-
-          <div className="w-px h-6 bg-white/20" />
-          
-          {/* Progress Info */}
-          <div className="text-sm text-gray-300 min-w-[60px] text-center">
-            {currentItemIndex + 1} / {project.items.length}
-          </div>
-        </div>
-      )}
-
-      {/* Control Panel when not playing */}
-      {!isPlaying && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-black/60 backdrop-blur-md rounded-2xl px-6 py-3">
-          <button onClick={handleShare} className="text-white hover:text-purple-400 transition-colors duration-200 p-2">
             <Share className="w-5 h-5" />
           </button>
           
           <Link
             href={`/edit/${projectId}`}
-            className="text-white hover:text-yellow-400 transition-colors duration-200 p-2"
+            className="text-white/80 hover:text-white transition-all duration-200 p-3 hover:bg-white/10 rounded-full backdrop-blur-sm"
+            title="編集"
           >
             <Edit className="w-5 h-5" />
           </Link>

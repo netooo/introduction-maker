@@ -22,6 +22,8 @@ export class ImageService {
     itemId: string,
     file: File
   ): Promise<string> {
+    console.log(`Upload image for project ${projectId}, item ${itemId}`)
+    
     // Validate image format and size
     if (!IMAGE_CONFIG.ALLOWED_FORMATS.includes(file.type as any)) {
       throw new Error('サポートされていないファイル形式です（JPEG、PNG、WebPのみ）')
@@ -34,12 +36,16 @@ export class ImageService {
     // 一時的なIDでない場合のみアイテムの存在をチェック
     let existingImageUrl: string | null = null
     if (!itemId.startsWith('temp-')) {
+      console.log(`Checking for existing item ${itemId} in project ${projectId}`)
+      
       const item = await this.db.item.findFirst({
         where: {
           id: itemId,
           projectId,
         },
       })
+
+      console.log(`Item found:`, item ? 'Yes' : 'No')
 
       if (!item) {
         throw new Error('Item not found')
@@ -50,6 +56,8 @@ export class ImageService {
         await this.deleteExistingImage(item.imageUrl)
         existingImageUrl = item.imageUrl
       }
+    } else {
+      console.log(`Skipping item validation for temp item ${itemId}`)
     }
 
     let imageUrl: string
