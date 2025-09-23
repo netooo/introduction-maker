@@ -22,7 +22,7 @@ export default function HomePage() {
               <h3 className="text-lg font-semibold">テンプレート選択</h3>
             </div>
             <p className="text-gray-600 mb-4">
-              サッカーや野球など、スポーツのテンプレートから選択
+              スポーツのテンプレートから選択
             </p>
           </div>
 
@@ -47,18 +47,11 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="text-center space-y-4">
+        <div className="text-center">
           <Link href="/create" className="btn-primary text-lg px-8 py-3 inline-flex items-center">
             <Play className="w-5 h-5 mr-2" />
             紹介映像を作成する
           </Link>
-          
-          <div>
-            <Link href="/test-templates" className="btn-secondary text-base px-6 py-2 inline-flex items-center">
-              <Sparkles className="w-4 h-4 mr-2" />
-              テンプレートプレビュー
-            </Link>
-          </div>
         </div>
 
         <div className="mt-16 text-center">
