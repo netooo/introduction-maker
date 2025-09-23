@@ -91,14 +91,11 @@ export default function ViewPage() {
 
   const handleShare = async () => {
     try {
-      await navigator.share({
-        title: 'Introduction Maker',
-        url: window.location.href,
-      })
-    } catch (error) {
-      // Fallback: URLをクリップボードにコピー
-      navigator.clipboard.writeText(window.location.href)
+      await navigator.clipboard.writeText(window.location.href)
       alert('URLをクリップボードにコピーしました')
+    } catch (error) {
+      console.error('クリップボードへのコピーに失敗しました:', error)
+      alert('URLのコピーに失敗しました')
     }
   }
 
