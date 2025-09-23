@@ -112,7 +112,7 @@ const positionNames = {
 }
 
 export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
-  const { currentIndex, items } = props
+  const { currentIndex, items, isEditMode = false, onItemClick, selectedIndex } = props
 
   // currentIndexを4つのグループに対応させる (0-2=GK, 3-5=DF, 6-8=MF, 9-10=FW)
   const getCurrentGroupFromIndex = (index: number): string => {
@@ -227,10 +227,11 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
           {/* Players positioned on the field */}
           {displayItems.map((item, index) => {
             const position = soccerPositions[index] || { x: 50, y: 50, position: 'FW' }
-            const isInCurrentGroup = currentGroupIndices.includes(index)
+            const isInCurrentGroup = !isEditMode && currentGroupIndices.includes(index)
             const hasRealData = items[index] !== undefined
             const playerPosition = soccerPositions[index]?.position || 'FW'
             const hasBeenShown = shownGroups.has(playerPosition)
+            const isSelected = isEditMode && selectedIndex === index
 
             // グループ内での位置計算
             const groupIndex = isInCurrentGroup ? currentGroupIndices.indexOf(index) : -1
@@ -269,13 +270,20 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
             return (
               <motion.div
                 key={item.id}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${isEditMode ? 'cursor-pointer transition-all duration-200' : ''}`}
                 style={{
-                  left: isInCurrentGroup ? `${horizontalPosition}%` : `${position.x}%`,
+                  left: isEditMode ? `${(isInCurrentGroup ? horizontalPosition : position.x) - 1}%` : isInCurrentGroup ? `${horizontalPosition}%` : `${position.x}%`,
                   top: isInCurrentGroup ? '48%' : `${position.y}%`,
-                  zIndex: isInCurrentGroup ? 30 : 20
+                  zIndex: isEditMode && isSelected ? 50 : isInCurrentGroup ? 30 : 20
                 }}
-                animate={isInCurrentGroup ? {
+                animate={isEditMode ? {
+                  x: `0%`,
+                  y: `0%`,
+                  scale: isSelected ? perspectiveScale * 1.1 : perspectiveScale,
+                  opacity: 1,
+                  rotateY: 0,
+                  transition: { duration: 0.3, ease: 'easeOut' }
+                } : isInCurrentGroup ? {
                   x: [`0%`, `0%`, `${horizontalPosition - position.x}%`, `${horizontalPosition - position.x}%`],
                   y: [`0%`, `0%`, `${48 - position.y}%`, `${48 - position.y}%`],
                   scale: [perspectiveScale, perspectiveScale, 2.0 * scaleMultiplier, 2.0 * scaleMultiplier],
@@ -294,8 +302,54 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
                   rotateY: 0,
                   transition: { duration: 0.3, ease: 'easeOut' }
                 }}
+                onClick={isEditMode && onItemClick ? (e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onItemClick(index)
+                } : undefined}
+                whileHover={isEditMode ? { scale: perspectiveScale * 1.05 } : undefined}
               >
-                {isInCurrentGroup ? (
+{isEditMode ? (
+                  /* Edit mode: Always show small yellow cards */
+                  <div className={`${isSelected ? 'bg-blue-400 ring-4 ring-blue-200' : 'bg-yellow-300'} rounded-lg shadow-lg p-2 w-24 h-36 text-center flex flex-col relative transition-all duration-200 hover:shadow-xl`}>
+
+                    {/* Player Image */}
+                    <div className="flex-1 flex items-center justify-center overflow-hidden rounded-lg">
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          style={{
+                            background: 'transparent',
+                            mixBlendMode: 'multiply'
+                          }}
+                        />
+                      ) : (
+                        <div className="flex-1 flex items-center justify-center">
+                          <div
+                            className="text-7xl text-black leading-none"
+                            style={{
+                              transform: 'scaleY(1.2)',
+                              fontFamily: 'system-ui, -apple-system, sans-serif',
+                              fontWeight: '900',
+                              letterSpacing: '-0.02em'
+                            }}
+                          >
+                            {index + 1}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Player Name */}
+                    {hasRealData && item.name && (
+                      <div className="text-xs font-bold text-black truncate leading-none mt-1">
+                        {item.name.split(' ')[0]}
+                      </div>
+                    )}
+                  </div>
+                ) : isInCurrentGroup ? (
                   /* Large focused player card for current group - compensate for Y rotation */
                   <div
                     className="bg-yellow-300 rounded-2xl shadow-2xl p-4 w-36 h-56 text-center transform flex flex-col relative"
@@ -375,42 +429,44 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
           })}
         </div>
 
-        {/* Position Area - Right side with position name display */}
-        <div className="absolute right-0 top-0 w-[15%] h-full bg-yellow-400 flex flex-col items-center justify-center" style={{ borderRadius: '60px 0 0 60px' }}>
-          {/* Position Name Display - Vertical with slide in/out animation */}
-          <div className="text-center relative">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentGroup}
-                className="text-white font-extrabold"
-                style={{
-                  writingMode: 'vertical-rl',
-                  textOrientation: 'mixed',
-                  fontSize: '10rem',
-                }}
-                initial={{ y: -300, rotate: 180 }}
-                animate={{
-                  y: 0,
-                  rotate: 180,
-                  transition: {
-                    duration: 0.8,
-                    ease: [0.25, 0.46, 0.45, 0.94]
-                  }
-                }}
-                exit={{
-                  y: 1200,
-                  rotate: 180,
-                  transition: {
-                    duration: 0.6,
-                    ease: [0.25, 0.46, 0.45, 0.94]
-                  }
-                }}
-              >
-                {positionNames[currentGroup as keyof typeof positionNames]}
-              </motion.div>
-            </AnimatePresence>
+{!isEditMode && (
+          /* Position Area - Right side with position name display */
+          <div className="absolute right-0 top-0 w-[15%] h-full bg-yellow-400 flex flex-col items-center justify-center" style={{ borderRadius: '60px 0 0 60px' }}>
+            {/* Position Name Display - Vertical with slide in/out animation */}
+            <div className="text-center relative">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentGroup}
+                  className="text-white font-extrabold"
+                  style={{
+                    writingMode: 'vertical-rl',
+                    textOrientation: 'mixed',
+                    fontSize: '10rem',
+                  }}
+                  initial={{ y: -300, rotate: 180 }}
+                  animate={{
+                    y: 0,
+                    rotate: 180,
+                    transition: {
+                      duration: 0.8,
+                      ease: [0.25, 0.46, 0.45, 0.94]
+                    }
+                  }}
+                  exit={{
+                    y: 1200,
+                    rotate: 180,
+                    transition: {
+                      duration: 0.6,
+                      ease: [0.25, 0.46, 0.45, 0.94]
+                    }
+                  }}
+                >
+                  {positionNames[currentGroup as keyof typeof positionNames]}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </motion.div>
   )

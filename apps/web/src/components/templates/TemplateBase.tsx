@@ -9,6 +9,9 @@ export interface TemplateProps {
   currentIndex: number
   isPlaying: boolean
   onItemChange?: (index: number) => void
+  isEditMode?: boolean
+  onItemClick?: (index: number) => void
+  selectedIndex?: number
 }
 
 export interface AnimationConfig {

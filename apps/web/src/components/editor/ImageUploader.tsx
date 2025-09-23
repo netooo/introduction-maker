@@ -270,7 +270,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute -bottom-10 left-0 right-0 flex items-center justify-center"
+            className="absolute -bottom-16 left-0 right-0 flex items-center justify-center z-50"
           >
             <div className="flex items-center space-x-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />

@@ -26,7 +26,8 @@ export default function CreatePage() {
       const data = await response.json()
 
       if (data.success) {
-        router.push(`/edit/${data.data.id}`)
+        // Use window.location for complete page navigation to avoid any client-side cache
+        window.location.href = `/edit/${data.data.id}`
       } else {
         throw new Error(data.error || 'プロジェクトの作成に失敗しました')
       }
