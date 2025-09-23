@@ -8,6 +8,8 @@ export interface TemplateProps {
   items: Item[]
   currentIndex: number
   isPlaying: boolean
+  isPaused?: boolean
+  hasPlayedOnce?: boolean
   onItemChange?: (index: number) => void
   isEditMode?: boolean
   onItemClick?: (index: number) => void
@@ -48,7 +50,7 @@ export const TemplateBase: React.FC<TemplateProps & {
       {children}
 
       <AnimatePresence mode="wait">
-        {isPlaying && currentItem && (
+        {(isPlaying || isPaused) && currentItem && (
           <motion.div
             key={currentIndex}
             variants={animationConfig.container}
@@ -104,7 +106,7 @@ export const TemplateBase: React.FC<TemplateProps & {
       </AnimatePresence>
 
       {/* Progress Bar */}
-      {isPlaying && (
+      {(isPlaying || isPaused) && (
         <motion.div 
           className="absolute bottom-0 left-0 w-full h-1 bg-gray-800"
           initial={{ opacity: 0 }}

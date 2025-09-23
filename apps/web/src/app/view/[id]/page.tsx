@@ -12,6 +12,7 @@ export default function ViewPage() {
   const projectId = params.id as string
   const [isPlaying, setIsPlaying] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
+  const [hasPlayedOnce, setHasPlayedOnce] = useState(false)
   const [currentItemIndex, setCurrentItemIndex] = useState(0)
   const [project, setProject] = useState<{ template: Template; items: Item[] } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -72,6 +73,7 @@ export default function ViewPage() {
   const handlePlay = () => {
     setIsPlaying(true)
     setIsPaused(false)
+    setHasPlayedOnce(true)
     setCurrentItemIndex(0)
   }
 
@@ -103,9 +105,11 @@ export default function ViewPage() {
     if (isPlaying && !isPaused && project) {
       const timer = setTimeout(() => {
         setCurrentItemIndex(prev => {
-          // 最後の項目に到達したら最初に戻る（ループ再生）
+          // 最後の項目に到達したら停止
           if (prev >= project.items.length - 1) {
-            return 0
+            setIsPlaying(false)
+            setIsPaused(false)
+            return prev
           }
           return prev + 1
         })
@@ -160,12 +164,13 @@ export default function ViewPage() {
           template={project.template}
           items={project.items}
           currentIndex={currentItemIndex}
-          isPlaying={isPlaying && !isPaused}
+          isPlaying={isPlaying}
+          isPaused={isPaused}
         />
       </div>
 
-      {/* Play Button Overlay (when not playing) */}
-      {!isPlaying && (
+      {/* Play Button Overlay (when not playing and first time) */}
+      {!isPlaying && !hasPlayedOnce && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50">
           <div className="text-center">
             <div className="mb-8 p-8 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20">
@@ -187,51 +192,68 @@ export default function ViewPage() {
         </div>
       )}
 
-      {/* Minimalist Control Panel */}
-      {isPlaying && (
+      {/* Control Panel - Always at bottom */}
+      {(isPlaying || hasPlayedOnce) && (
         <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-40">
           <div className="flex items-center space-x-4 bg-black/60 backdrop-blur-md rounded-full px-6 py-3 shadow-2xl">
+            {/* Play/Pause/Resume button */}
+            {isPlaying ? (
+              <button
+                onClick={isPaused ? handleResume : handlePause}
+                className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
+                title={isPaused ? "再生" : "一時停止"}
+              >
+                {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+              </button>
+            ) : (
+              <button
+                onClick={handlePlay}
+                className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
+                title="再生"
+              >
+                <Play className="w-5 h-5" />
+              </button>
+            )}
+
             <button
-              onClick={isPaused ? handleResume : handlePause}
-              className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
-              title={isPaused ? "再生" : "一時停止"}
-            >
-              {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
-            </button>
-            
-            <button 
-              onClick={handleReset} 
+              onClick={handleReset}
               className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
               title="最初から再生"
             >
               <RotateCcw className="w-5 h-5" />
             </button>
-            
+
             <div className="w-px h-4 bg-white/30" />
-            
-            {/* Progress Indicator */}
-            <div className="flex items-center space-x-2">
-              <div className="text-xs text-yellow-400 font-mono min-w-[45px] text-center">
-                {String(currentItemIndex + 1).padStart(2, '0')}/{String(project.items.length).padStart(2, '0')}
-              </div>
-              <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-yellow-400 to-orange-400 transition-all duration-300 ease-out"
-                  style={{ width: `${((currentItemIndex + 1) / project.items.length) * 100}%` }}
-                />
-              </div>
-            </div>
-            
-            <div className="w-px h-4 bg-white/30" />
-            
-            <button 
-              onClick={handleShare} 
+
+            {/* Progress Indicator - show when playing or has played once */}
+            {(isPlaying || hasPlayedOnce) && (
+              <>
+                <div className="flex items-center space-x-2">
+                  <div className="text-xs text-yellow-400 font-mono min-w-[45px] text-center">
+                    {String(currentItemIndex + 1).padStart(2, '0')}/{String(project.items.length).padStart(2, '0')}
+                  </div>
+                  {isPlaying && (
+                    <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-yellow-400 to-orange-400 transition-all duration-300 ease-out"
+                        style={{ width: `${((currentItemIndex + 1) / project.items.length) * 100}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-px h-4 bg-white/30" />
+              </>
+            )}
+
+            <button
+              onClick={handleShare}
               className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
               title="共有"
             >
               <Share className="w-4 h-4" />
             </button>
-            
+
             <Link
               href={`/edit/${projectId}`}
               className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
@@ -240,27 +262,6 @@ export default function ViewPage() {
               <Edit className="w-4 h-4" />
             </Link>
           </div>
-        </div>
-      )}
-
-      {/* Simple Control Panel when not playing */}
-      {!isPlaying && (
-        <div className="absolute top-6 right-6 flex items-center space-x-3 z-40">
-          <button 
-            onClick={handleShare} 
-            className="text-white/80 hover:text-white transition-all duration-200 p-3 hover:bg-white/10 rounded-full backdrop-blur-sm"
-            title="共有"
-          >
-            <Share className="w-5 h-5" />
-          </button>
-          
-          <Link
-            href={`/edit/${projectId}`}
-            className="text-white/80 hover:text-white transition-all duration-200 p-3 hover:bg-white/10 rounded-full backdrop-blur-sm"
-            title="編集"
-          >
-            <Edit className="w-5 h-5" />
-          </Link>
         </div>
       )}
     </div>

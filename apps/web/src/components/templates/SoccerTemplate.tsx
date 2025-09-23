@@ -112,7 +112,7 @@ const positionNames = {
 }
 
 export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
-  const { currentIndex, items, isEditMode = false, onItemClick, selectedIndex } = props
+  const { currentIndex, items, isPlaying, isPaused = false, hasPlayedOnce = false, isEditMode = false, onItemClick, selectedIndex } = props
 
   // currentIndexを4つのグループに対応させる (0-2=GK, 3-5=DF, 6-8=MF, 9-10=FW)
   const getCurrentGroupFromIndex = (index: number): string => {
@@ -128,10 +128,39 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
   // 一度表示されたグループを追跡
   const [shownGroups, setShownGroups] = React.useState<Set<string>>(new Set())
 
+  // 前回のcurrentIndexを追跡
+  const [previousIndex, setPreviousIndex] = React.useState<number | null>(null)
+
+  // 各グループのアニメーション完了状態を追跡
+  const [animatedGroups, setAnimatedGroups] = React.useState<Set<string>>(new Set())
+
   React.useEffect(() => {
     if (currentGroup) {
       setShownGroups(prev => new Set(prev).add(currentGroup))
     }
+  }, [currentGroup])
+
+  // currentIndexが変更された時のみアニメーション開始
+  const isNewIndex = previousIndex !== currentIndex
+
+  React.useEffect(() => {
+    if (isPlaying && !isPaused) {
+      setPreviousIndex(currentIndex)
+    }
+  }, [currentIndex, isPlaying, isPaused])
+
+  // プレイ状態がリセットされた時にアニメーション状態をリセット
+  React.useEffect(() => {
+    if (!isPlaying && !hasPlayedOnce) {
+      setAnimatedGroups(new Set())
+      setShownGroups(new Set())
+      setPreviousIndex(null)
+    }
+  }, [isPlaying, hasPlayedOnce])
+
+  // アニメーション完了時の処理
+  const handleAnimationComplete = React.useCallback(() => {
+    setAnimatedGroups(prev => new Set(prev).add(currentGroup))
   }, [currentGroup])
 
   // プレースホルダーアイテムを11個作成（アイテムが少ない場合）
@@ -227,7 +256,7 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
           {/* Players positioned on the field */}
           {displayItems.map((item, index) => {
             const position = soccerPositions[index] || { x: 50, y: 50, position: 'FW' }
-            const isInCurrentGroup = !isEditMode && currentGroupIndices.includes(index)
+            const isInCurrentGroup = !isEditMode && currentGroupIndices.includes(index) && (isPlaying || hasPlayedOnce)
             const hasRealData = items[index] !== undefined
             const playerPosition = soccerPositions[index]?.position || 'FW'
             const hasBeenShown = shownGroups.has(playerPosition)
@@ -283,17 +312,24 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
                   opacity: 1,
                   rotateY: 0,
                   transition: { duration: 0.3, ease: 'easeOut' }
-                } : isInCurrentGroup ? {
-                  x: [`0%`, `0%`, `${horizontalPosition - position.x}%`, `${horizontalPosition - position.x}%`],
-                  y: [`0%`, `0%`, `${48 - position.y}%`, `${48 - position.y}%`],
-                  scale: [perspectiveScale, perspectiveScale, 2.0 * scaleMultiplier, 2.0 * scaleMultiplier],
-                  opacity: [0.6, 0.6, 1, 1],
-                  rotateY: [0, 0, 180, 180],
+                } : (isInCurrentGroup && isPlaying && !isPaused && isNewIndex && !animatedGroups.has(currentGroup)) ? {
+                  x: `${horizontalPosition - position.x}%`,
+                  y: `${48 - position.y}%`,
+                  scale: 2.0 * scaleMultiplier,
+                  opacity: 1,
+                  rotateY: 180,
                   transition: {
-                    duration: 4,
-                    times: [0, 0.2, 0.4, 1.0],
-                    ease: 'easeOut'
+                    duration: 1,
+                    ease: 'easeOut',
+                    onComplete: handleAnimationComplete
                   }
+                } : isInCurrentGroup && (isPlaying || hasPlayedOnce) ? {
+                  x: `${horizontalPosition - position.x}%`,
+                  y: `${48 - position.y}%`,
+                  scale: 2.0 * scaleMultiplier,
+                  opacity: 1,
+                  rotateY: 180,
+                  transition: { duration: 0.3, ease: 'easeOut' }
                 } : {
                   x: `0%`,
                   y: `0%`,
