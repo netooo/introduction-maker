@@ -11,6 +11,7 @@ export default function ViewPage() {
   const params = useParams()
   const projectId = params.id as string
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
   const [currentItemIndex, setCurrentItemIndex] = useState(0)
   const [project, setProject] = useState<{ template: Template; items: Item[] } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -70,15 +71,21 @@ export default function ViewPage() {
 
   const handlePlay = () => {
     setIsPlaying(true)
+    setIsPaused(false)
     setCurrentItemIndex(0)
   }
 
   const handlePause = () => {
-    setIsPlaying(false)
+    setIsPaused(true)
+  }
+
+  const handleResume = () => {
+    setIsPaused(false)
   }
 
   const handleReset = () => {
     setIsPlaying(false)
+    setIsPaused(false)
     setCurrentItemIndex(0)
   }
 
@@ -96,7 +103,7 @@ export default function ViewPage() {
   }
 
   useEffect(() => {
-    if (isPlaying && project) {
+    if (isPlaying && !isPaused && project) {
       const timer = setTimeout(() => {
         setCurrentItemIndex(prev => {
           // 最後の項目に到達したら最初に戻る（ループ再生）
@@ -109,7 +116,7 @@ export default function ViewPage() {
 
       return () => clearTimeout(timer)
     }
-  }, [isPlaying, currentItemIndex, project])
+  }, [isPlaying, isPaused, currentItemIndex, project])
 
   if (loading) {
     return (
@@ -156,7 +163,7 @@ export default function ViewPage() {
           template={project.template}
           items={project.items}
           currentIndex={currentItemIndex}
-          isPlaying={isPlaying}
+          isPlaying={isPlaying && !isPaused}
         />
       </div>
 
@@ -187,12 +194,12 @@ export default function ViewPage() {
       {isPlaying && (
         <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-40">
           <div className="flex items-center space-x-4 bg-black/60 backdrop-blur-md rounded-full px-6 py-3 shadow-2xl">
-            <button 
-              onClick={handlePause} 
+            <button
+              onClick={isPaused ? handleResume : handlePause}
               className="text-white hover:text-yellow-400 transition-all duration-200 p-2 hover:scale-110"
-              title="一時停止"
+              title={isPaused ? "再生" : "一時停止"}
             >
-              <Pause className="w-5 h-5" />
+              {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
             </button>
             
             <button 
