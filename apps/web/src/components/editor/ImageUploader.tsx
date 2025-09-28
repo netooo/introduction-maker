@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { Upload, X, Image as ImageIcon, AlertCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import type { ApiResponse, ImageUploadResponse } from '@/types/api'
 
 interface ImageUploaderProps {
   projectId: string
@@ -65,12 +66,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     })
 
     if (!response.ok) {
-      const errorData = await response.json()
+      const errorData = await response.json() as ApiResponse
       throw new Error(errorData.error || 'アップロードに失敗しました')
     }
 
-    const data = await response.json()
-    return data.data.imageUrl
+    const data = await response.json() as ApiResponse<ImageUploadResponse>
+    return data.data?.imageUrl || ''
   }
 
   const handleFileSelect = useCallback(async (files: FileList | null) => {

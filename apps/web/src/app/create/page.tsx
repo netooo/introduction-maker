@@ -23,9 +23,9 @@ export default function CreatePage() {
         throw new Error('プロジェクトの作成に失敗しました')
       }
 
-      const data = await response.json()
+      const data = await response.json() as { success: boolean; data?: { id: string }; error?: string }
 
-      if (data.success) {
+      if (data.success && data.data) {
         // Use window.location for complete page navigation to avoid any client-side cache
         window.location.href = `/edit/${data.data.id}`
       } else {

@@ -8,6 +8,7 @@ import { Play, Pause, RotateCcw, Share, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { TemplateRenderer } from '@/components/templates/TemplateRenderer'
 import { TEMPLATES, type Item, type Template } from '@/types'
+import type { ApiResponse, ProjectData } from '@/types/api'
 
 export default function ViewPage() {
   const params = useParams()
@@ -28,9 +29,9 @@ export default function ViewPage() {
         if (!response.ok) {
           throw new Error('プロジェクトの取得に失敗しました')
         }
-        const data = await response.json()
-        
-        if (data.success) {
+        const data = await response.json() as ApiResponse<ProjectData>
+
+        if (data.success && data.data) {
           const projectData = data.data
           const template = TEMPLATES[projectData.templateId as keyof typeof TEMPLATES] || TEMPLATES.soccer
           

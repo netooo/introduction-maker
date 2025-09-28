@@ -29,14 +29,18 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL
-
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${apiUrl}/:path*`, // Proxy to API server
-      },
-    ]
+    // ローカル開発時のみAPI呼び出しをプロキシ
+    if (process.env.NODE_ENV === 'development') {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787'
+      return [
+        {
+          source: '/api/:path*',
+          destination: `${apiUrl}/api/:path*`,
+        },
+      ]
+    }
+    // 本番環境ではPages Functionsが処理
+    return []
   },
 }
 

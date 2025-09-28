@@ -10,6 +10,7 @@ import { ImageUploader } from '@/components/editor/ImageUploader'
 import { TemplateRenderer } from '@/components/templates/TemplateRenderer'
 import type { Item, Template } from '@/types'
 import { TEMPLATES } from '@/types'
+import type { ApiResponse, ProjectData, ImageUploadResponse } from '@/types/api'
 
 function EditPageContent({ projectId }: { projectId: string }) {
   const router = useRouter()
@@ -43,9 +44,9 @@ function EditPageContent({ projectId }: { projectId: string }) {
         if (!response.ok) {
           throw new Error('Failed to fetch project')
         }
-        const data = await response.json()
+        const data = await response.json() as ApiResponse<ProjectData>
 
-        if (data.success) {
+        if (data.success && data.data) {
           const projectData = data.data
           const template = TEMPLATES[projectData.templateId as keyof typeof TEMPLATES] || TEMPLATES.soccer
 
@@ -307,8 +308,10 @@ function EditPageContent({ projectId }: { projectId: string }) {
                                   body: formData,
                                 })
                                 if (response.ok) {
-                                  const data = await response.json()
-                                  handleImageUpload(currentIndex, data.data.imageUrl)
+                                  const data = await response.json() as ApiResponse<ImageUploadResponse>
+                                  if (data.success && data.data) {
+                                    handleImageUpload(currentIndex, data.data.imageUrl)
+                                  }
                                 }
                               } catch (error) {
                                 console.error('Upload error:', error)
