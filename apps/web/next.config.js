@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Production optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  experimental: {
+    // Optimize bundle size
+    optimizePackageImports: ['framer-motion', 'lucide-react'],
+  },
   images: {
     domains: ['pub-example.r2.dev'], // Cloudflare R2のドメインを追加予定
     formats: ['image/webp', 'image/avif'],
