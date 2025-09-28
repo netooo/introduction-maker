@@ -8,25 +8,12 @@ interface Env {
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, env } = context
 
-  // Extract the path after /api/
-  const url = new URL(request.url)
-  const apiPath = url.pathname.replace('/api', '')
-
-  // Create new URL for the Worker request
-  const workerUrl = new URL(`/api${apiPath}${url.search}`, 'https://placeholder.dev')
-
-  // Create new request with the same method, headers, and body
-  const workerRequest = new Request(workerUrl.toString(), {
-    method: request.method,
-    headers: request.headers,
-    body: request.body,
-  })
-
   try {
-    // Use Service Binding to call the Worker
-    const response = await env.API.fetch(workerRequest)
+    // Service Bindingを使って直接Workerにリクエストを転送
+    // URLを変更する必要はない - Workerが元のリクエストパスを処理
+    const response = await env.API.fetch(request)
 
-    // Return the response from the Worker
+    // Workerからのレスポンスをそのまま返す
     return response
   } catch (error) {
     console.error('Error calling API Worker:', error)
