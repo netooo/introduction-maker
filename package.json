@@ -2,15 +2,20 @@
   "name": "introduction-maker",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "build": "pnpm run build --recursive",
-    "dev": "pnpm run dev --recursive",
-    "lint": "pnpm run lint --recursive",
-    "type-check": "pnpm run type-check --recursive"
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspaces",
+    "lint": "npm run lint --workspaces",
+    "type-check": "npm run type-check --workspaces",
+    "build:web": "npm run build --workspace=apps/web",
+    "build:api": "npm run build --workspace=apps/api"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
-  },
-  "packageManager": "pnpm@8.0.0"
+  }
 }
