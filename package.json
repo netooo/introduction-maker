@@ -11,8 +11,9 @@
     "dev": "npm run dev --workspaces",
     "lint": "npm run lint --workspaces",
     "type-check": "npm run type-check --workspaces",
-    "build:web": "npm run build --workspace=apps/web",
-    "build:api": "npm run build --workspace=apps/api"
+    "build:web": "npm run build --workspace=apps/web && npm run clean:cache",
+    "build:api": "npm run build --workspace=apps/api",
+    "clean:cache": "rm -rf apps/web/.next/cache && rm -rf apps/web/.next/standalone"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

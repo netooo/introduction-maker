@@ -4,9 +4,25 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  // Completely disable caching for Cloudflare Pages deployment
+  cacheMaxMemorySize: 0,
+  cacheHandler: undefined,
   experimental: {
     // Optimize bundle size
     optimizePackageImports: ['framer-motion', 'lucide-react'],
+  },
+  // Custom webpack configuration to disable caching
+  webpack: (config, { isServer, dev }) => {
+    if (!dev) {
+      // Disable all caching in production builds
+      config.cache = false
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+        chunkIds: 'deterministic',
+      }
+    }
+    return config
   },
   images: {
     domains: ['pub-example.r2.dev'], // Cloudflare R2のドメインを追加予定

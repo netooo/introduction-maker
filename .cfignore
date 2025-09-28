@@ -1,13 +1,19 @@
 # Cache directories - exclude all cache files
 **/cache/
+**/cache/**
 **/.next/cache/
+**/.next/cache/**
+.next/cache/
+.next/cache/**
 apps/web/.next/cache/
 apps/web/.next/cache/**/*
 
 # Webpack cache files
 **/webpack/
+**/webpack/**
 **/*.pack
 **/*.pack.gz
+**/*.pack.old
 
 # Development files
 node_modules/
