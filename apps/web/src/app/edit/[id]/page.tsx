@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+
+export const runtime = 'edge'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Play, Save, Share } from 'lucide-react'
 import Link from 'next/link'
