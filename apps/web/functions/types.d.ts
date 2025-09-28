@@ -1,8 +1,16 @@
 // Cloudflare Pages Functions types
 /// <reference types="@cloudflare/workers-types" />
 
+interface APIWorkerRPC {
+  createProject(data: any): Promise<any>
+  getProject(id: string): Promise<any>
+  updateProject(id: string, data: any): Promise<any>
+  deleteProject(id: string): Promise<any>
+  healthCheck(): Promise<any>
+}
+
 interface Env {
-  API: Fetcher
+  API: APIWorkerRPC
 }
 
 declare global {

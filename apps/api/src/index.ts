@@ -1,4 +1,8 @@
 import { Hono } from 'hono'
+import { WorkerEntrypoint } from 'cloudflare:workers'
+import { PrismaClient } from '@prisma/client'
+import { PrismaD1 } from '@prisma/adapter-d1'
+import { ProjectService } from './services/project.service'
 import { corsMiddleware } from './middleware/cors'
 import { errorMiddleware } from './middleware/error'
 import { projects } from './routes/projects'
@@ -53,6 +57,109 @@ app.get('/', (c) => {
     },
   })
 })
+
+// WorkerEntrypoint for RPC communication
+export class IntroductionMakerAPI extends WorkerEntrypoint<Bindings> {
+  // Helper function to create Prisma client
+  private createPrismaClient(db: D1Database) {
+    const adapter = new PrismaD1(db)
+    return new PrismaClient({ adapter })
+  }
+
+  // RPC methods for projects
+  async createProject(data: any) {
+    const prisma = this.createPrismaClient(this.env.DB)
+    const service = new ProjectService(prisma)
+
+    try {
+      const project = await service.createProject(data)
+      return {
+        success: true,
+        data: project,
+      }
+    } catch (error) {
+      console.error('Create project error:', error)
+      return {
+        success: false,
+        error: 'Failed to create project',
+      }
+    }
+  }
+
+  async getProject(id: string) {
+    const prisma = this.createPrismaClient(this.env.DB)
+    const service = new ProjectService(prisma)
+
+    try {
+      const project = await service.getProject(id)
+
+      if (!project) {
+        return {
+          success: false,
+          error: 'Project not found',
+        }
+      }
+
+      return {
+        success: true,
+        data: project,
+      }
+    } catch (error) {
+      console.error('Get project error:', error)
+      return {
+        success: false,
+        error: 'Failed to get project',
+      }
+    }
+  }
+
+  async updateProject(id: string, data: any) {
+    const prisma = this.createPrismaClient(this.env.DB)
+    const service = new ProjectService(prisma)
+
+    try {
+      const project = await service.updateProject(id, data)
+      return {
+        success: true,
+        data: project,
+      }
+    } catch (error) {
+      console.error('Update project error:', error)
+      return {
+        success: false,
+        error: 'Failed to update project',
+      }
+    }
+  }
+
+  async deleteProject(id: string) {
+    const prisma = this.createPrismaClient(this.env.DB)
+    const service = new ProjectService(prisma)
+
+    try {
+      await service.deleteProject(id)
+      return {
+        success: true,
+        message: 'Project deleted successfully',
+      }
+    } catch (error) {
+      console.error('Delete project error:', error)
+      return {
+        success: false,
+        error: 'Failed to delete project',
+      }
+    }
+  }
+
+  // Health check method
+  async healthCheck() {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      environment: this.env.ENVIRONMENT || 'development',
+    }
+  }
+}
 
 export default {
   fetch: app.fetch,
