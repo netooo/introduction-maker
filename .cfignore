@@ -1,0 +1,41 @@
+# Cache directories - exclude all cache files
+**/cache/
+**/.next/cache/
+apps/web/.next/cache/
+apps/web/.next/cache/**/*
+
+# Webpack cache files
+**/webpack/
+**/*.pack
+**/*.pack.gz
+
+# Development files
+node_modules/
+.env*
+.wrangler/
+
+# Build artifacts not needed for deployment
+apps/web/.next/trace
+apps/web/.next/types/
+apps/web/.next/standalone/
+tsconfig.tsbuildinfo
+**/*.tsbuildinfo
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
