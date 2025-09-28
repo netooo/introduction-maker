@@ -27,9 +27,9 @@ model Item {
   name        String
   imageUrl    String?
   description String
-  order       Int
-  
+  order       Int     @map("order_index")
+
   project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
+
   @@map("items")
 }
