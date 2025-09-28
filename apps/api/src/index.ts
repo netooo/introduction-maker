@@ -58,7 +58,7 @@ app.get('/', (c) => {
   })
 })
 
-// WorkerEntrypoint for RPC communication
+// WorkerEntrypoint for RPC communication (named export)
 export class IntroductionMakerAPI extends WorkerEntrypoint<Bindings> {
   // Helper function to create Prisma client
   private createPrismaClient(db: D1Database) {
@@ -161,6 +161,7 @@ export class IntroductionMakerAPI extends WorkerEntrypoint<Bindings> {
   }
 }
 
+// Default export for HTTP fetch handler
 export default {
   fetch: app.fetch,
 }

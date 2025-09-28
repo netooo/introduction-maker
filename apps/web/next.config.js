@@ -4,30 +4,14 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  // Completely disable caching for Cloudflare Pages deployment
-  cacheMaxMemorySize: 0,
-  cacheHandler: undefined,
   experimental: {
-    // Optimize bundle size
     optimizePackageImports: ['framer-motion', 'lucide-react'],
   },
-  // Custom webpack configuration to disable caching
-  webpack: (config, { isServer, dev }) => {
-    if (!dev) {
-      // Disable all caching in production builds
-      config.cache = false
-      config.optimization = {
-        ...config.optimization,
-        moduleIds: 'deterministic',
-        chunkIds: 'deterministic',
-      }
-    }
-    return config
-  },
   images: {
-    domains: ['pub-example.r2.dev'], // Cloudflare R2のドメインを追加予定
+    domains: ['pub-example.r2.dev'],
     formats: ['image/webp', 'image/avif'],
   },
+
   async rewrites() {
     // ローカル開発時のみAPI呼び出しをプロキシ
     if (process.env.NODE_ENV === 'development') {
@@ -39,7 +23,7 @@ const nextConfig = {
         },
       ]
     }
-    // 本番環境ではPages Functionsが処理
+    // 本番環境ではNext.js API Routesが処理
     return []
   },
 }
