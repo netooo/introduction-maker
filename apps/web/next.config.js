@@ -34,7 +34,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${apiUrl}/api/:path*`, // Proxy to API server
+        destination: `${apiUrl}/:path*`, // Proxy to API server
       },
     ]
   },
