@@ -23,14 +23,15 @@ export interface AnimationConfig {
   image: any
 }
 
-export const TemplateBase: React.FC<TemplateProps & { 
-  animationConfig: AnimationConfig 
-  children?: React.ReactNode 
-}> = ({ 
-  template, 
-  items, 
-  currentIndex, 
-  isPlaying, 
+export const TemplateBase: React.FC<TemplateProps & {
+  animationConfig: AnimationConfig
+  children?: React.ReactNode
+}> = ({
+  template,
+  items,
+  currentIndex,
+  isPlaying,
+  isPaused = false,
   animationConfig,
   children
 }) => {

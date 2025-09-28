@@ -252,15 +252,17 @@ function EditPageContent({ projectId }: { projectId: string }) {
 
         {/* フルスクリーンプレビューエリア */}
         <div className="relative h-[calc(100vh-12rem)] bg-black rounded-lg overflow-hidden">
-          <TemplateRenderer
-            template={project.template}
-            items={project.items}
-            currentIndex={0}
-            isPlaying={false}
-            isEditMode={true}
-            onItemClick={(index) => setSelectedItemIndex(index)}
-            selectedIndex={selectedItemIndex ?? undefined}
-          />
+          {project && (
+            <TemplateRenderer
+              template={project.template}
+              items={project.items}
+              currentIndex={0}
+              isPlaying={false}
+              isEditMode={true}
+              onItemClick={(index) => setSelectedItemIndex(index)}
+              selectedIndex={selectedItemIndex ?? undefined}
+            />
+          )}
           {loading && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <div className="text-center">
