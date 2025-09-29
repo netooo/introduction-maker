@@ -132,7 +132,7 @@ function EditPageContent({ projectId }: { projectId: string }) {
 
           if (item.id.startsWith('temp-')) {
             // Create new item
-            const response = await fetch(`/api/projects/${projectId}/items`, {
+            const response = await fetch(`/api/projects/${projectId}/items-create`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(itemData),

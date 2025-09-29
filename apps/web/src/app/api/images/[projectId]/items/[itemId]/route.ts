@@ -1,4 +1,4 @@
-// Next.js API Route with Cloudflare Service Binding RPC
+// Next.js API Route for image upload with Service Binding RPC
 import { NextRequest, NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
 
@@ -8,16 +8,8 @@ const WORKER_URL = 'https://introduction-maker-api.intro-maker.workers.dev'
 
 // Service Binding RPC interface
 interface APIWorkerRPC {
-  createProject(data: any): Promise<any>
-  getProject(id: string): Promise<any>
-  updateProject(id: string, data: any): Promise<any>
-  deleteProject(id: string): Promise<any>
   uploadItemImage(projectId: string, itemId: string, formData: FormData): Promise<any>
   deleteItemImage(projectId: string, itemId: string): Promise<any>
-  createItem(projectId: string, data: any): Promise<any>
-  updateItem(itemId: string, data: any): Promise<any>
-  deleteItem(itemId: string): Promise<any>
-  healthCheck(): Promise<any>
 }
 
 // Get Service Binding from Cloudflare environment
@@ -35,32 +27,32 @@ function getAPIBinding(): APIWorkerRPC {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { projectId: string; itemId: string } }
+) {
   try {
-    const data = await request.json()
+    const formData = await request.formData()
 
     // Service Binding RPC を優先、エラー時は HTTP fallback
     try {
       const api = getAPIBinding()
-      const result = await api.createProject(data)
+      const result = await api.uploadItemImage(params.projectId, params.itemId, formData)
 
       return NextResponse.json(result, {
-        status: result.success ? 201 : 500
+        status: result.success ? 200 : 500
       })
     } catch (bindingError) {
       // Fallback: HTTP経由でWorkerに直接リクエスト
-      const workerResponse = await fetch(`${WORKER_URL}/api/projects`, {
+      const workerResponse = await fetch(`${WORKER_URL}/api/images/${params.projectId}/items/${params.itemId}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        body: formData,
       })
 
       const result = await workerResponse.json()
 
       return NextResponse.json(result, {
-        status: workerResponse.ok ? 201 : 500
+        status: workerResponse.ok ? 200 : 500
       })
     }
   } catch (error) {
@@ -68,53 +60,46 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: false,
-      error: 'Failed to create project',
+      error: 'Failed to upload image',
       message: errorMessage,
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { projectId: string; itemId: string } }
+) {
   try {
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
-
-    if (!id) {
-      return NextResponse.json({
-        success: false,
-        error: 'Project ID is required'
-      }, { status: 400 })
-    }
-
     // Service Binding RPC を優先、エラー時は HTTP fallback
     try {
       const api = getAPIBinding()
-      const result = await api.getProject(id)
+      const result = await api.deleteItemImage(params.projectId, params.itemId)
 
       return NextResponse.json(result, {
-        status: result.success ? 200 : (result.error === 'Project not found' ? 404 : 500)
+        status: result.success ? 200 : 500
       })
     } catch (bindingError) {
       // Fallback: HTTP経由でWorkerに直接リクエスト
-      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const workerResponse = await fetch(`${WORKER_URL}/api/images/${params.projectId}/items/${params.itemId}`, {
+        method: 'DELETE',
       })
 
       const result = await workerResponse.json()
 
       return NextResponse.json(result, {
-        status: workerResponse.ok ? 200 : (workerResponse.status === 404 ? 404 : 500)
+        status: workerResponse.ok ? 200 : 500
       })
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+
     return NextResponse.json({
       success: false,
-      error: 'Failed to get project',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Failed to delete image',
+      message: errorMessage,
+      timestamp: new Date().toISOString()
     }, { status: 500 })
   }
 }

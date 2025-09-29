@@ -12,6 +12,11 @@ interface APIWorkerRPC {
   getProject(id: string): Promise<any>
   updateProject(id: string, data: any): Promise<any>
   deleteProject(id: string): Promise<any>
+  uploadItemImage(projectId: string, itemId: string, formData: FormData): Promise<any>
+  deleteItemImage(projectId: string, itemId: string): Promise<any>
+  createItem(projectId: string, data: any): Promise<any>
+  updateItem(itemId: string, data: any): Promise<any>
+  deleteItem(itemId: string): Promise<any>
   healthCheck(): Promise<any>
 }
 
@@ -32,20 +37,20 @@ function getAPIBinding(): APIWorkerRPC {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { projectId: string } }
 ) {
   try {
     // Service Binding RPC を優先、エラー時は HTTP fallback
     try {
       const api = getAPIBinding()
-      const result = await api.getProject(params.id)
+      const result = await api.getProject(params.projectId)
 
       return NextResponse.json(result, {
         status: result.success ? 200 : (result.error === 'Project not found' ? 404 : 500)
       })
     } catch (bindingError) {
       // Fallback: HTTP経由でWorkerに直接リクエスト
-      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${params.id}`, {
+      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${params.projectId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +77,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { projectId: string } }
 ) {
   try {
     const data = await request.json()
@@ -80,14 +85,14 @@ export async function PUT(
     // Service Binding RPC を優先、エラー時は HTTP fallback
     try {
       const api = getAPIBinding()
-      const result = await api.updateProject(params.id, data)
+      const result = await api.updateProject(params.projectId, data)
 
       return NextResponse.json(result, {
         status: result.success ? 200 : 500
       })
     } catch (bindingError) {
       // Fallback: HTTP経由でWorkerに直接リクエスト
-      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${params.id}`, {
+      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${params.projectId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -115,20 +120,20 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { projectId: string } }
 ) {
   try {
     // Service Binding RPC を優先、エラー時は HTTP fallback
     try {
       const api = getAPIBinding()
-      const result = await api.deleteProject(params.id)
+      const result = await api.deleteProject(params.projectId)
 
       return NextResponse.json(result, {
         status: result.success ? 200 : 500
       })
     } catch (bindingError) {
       // Fallback: HTTP経由でWorkerに直接リクエスト
-      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${params.id}`, {
+      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${params.projectId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

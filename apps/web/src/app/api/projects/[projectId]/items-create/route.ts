@@ -1,4 +1,4 @@
-// Next.js API Route with Cloudflare Service Binding RPC
+// Next.js API Route for project items with Service Binding RPC
 import { NextRequest, NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
 
@@ -35,21 +35,24 @@ function getAPIBinding(): APIWorkerRPC {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { projectId: string } }
+) {
   try {
     const data = await request.json()
 
     // Service Binding RPC を優先、エラー時は HTTP fallback
     try {
       const api = getAPIBinding()
-      const result = await api.createProject(data)
+      const result = await api.createItem(params.projectId, data)
 
       return NextResponse.json(result, {
         status: result.success ? 201 : 500
       })
     } catch (bindingError) {
       // Fallback: HTTP経由でWorkerに直接リクエスト
-      const workerResponse = await fetch(`${WORKER_URL}/api/projects`, {
+      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${params.projectId}/items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,53 +71,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: false,
-      error: 'Failed to create project',
+      error: 'Failed to create item',
       message: errorMessage,
       timestamp: new Date().toISOString()
-    }, { status: 500 })
-  }
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
-
-    if (!id) {
-      return NextResponse.json({
-        success: false,
-        error: 'Project ID is required'
-      }, { status: 400 })
-    }
-
-    // Service Binding RPC を優先、エラー時は HTTP fallback
-    try {
-      const api = getAPIBinding()
-      const result = await api.getProject(id)
-
-      return NextResponse.json(result, {
-        status: result.success ? 200 : (result.error === 'Project not found' ? 404 : 500)
-      })
-    } catch (bindingError) {
-      // Fallback: HTTP経由でWorkerに直接リクエスト
-      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      const result = await workerResponse.json()
-
-      return NextResponse.json(result, {
-        status: workerResponse.ok ? 200 : (workerResponse.status === 404 ? 404 : 500)
-      })
-    }
-  } catch (error) {
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to get project',
-      message: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 }

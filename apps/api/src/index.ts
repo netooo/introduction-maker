@@ -3,6 +3,7 @@ import { WorkerEntrypoint } from 'cloudflare:workers'
 import { PrismaClient } from '@prisma/client'
 import { PrismaD1 } from '@prisma/adapter-d1'
 import { ProjectService } from './services/project.service'
+import { ImageService } from './services/image.service'
 import { corsMiddleware } from './middleware/cors'
 import { errorMiddleware } from './middleware/error'
 import { projects } from './routes/projects'
@@ -157,6 +158,117 @@ export class IntroductionMakerAPI extends WorkerEntrypoint<Bindings> {
       status: 'ok',
       timestamp: new Date().toISOString(),
       environment: this.env.ENVIRONMENT || 'development',
+    }
+  }
+
+  // Image upload method
+  async uploadItemImage(projectId: string, itemId: string, formData: FormData) {
+    const prisma = this.createPrismaClient(this.env.DB)
+    const imageService = new ImageService(prisma, this.env.R2, this.env)
+
+    try {
+      const fileData = formData.get('image')
+
+      if (!fileData || typeof fileData === 'string') {
+        return {
+          success: false,
+          error: 'No image file provided',
+        }
+      }
+
+      const file = fileData as File
+      const imageUrl = await imageService.uploadItemImage(projectId, itemId, file)
+
+      return {
+        success: true,
+        data: {
+          imageUrl,
+        },
+      }
+    } catch (error) {
+      console.error('Upload image error:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to upload image',
+      }
+    }
+  }
+
+  // Image delete method
+  async deleteItemImage(projectId: string, itemId: string) {
+    const prisma = this.createPrismaClient(this.env.DB)
+    const imageService = new ImageService(prisma, this.env.R2, this.env)
+
+    try {
+      await imageService.deleteItemImage(projectId, itemId)
+      return {
+        success: true,
+        message: 'Image deleted successfully',
+      }
+    } catch (error) {
+      console.error('Delete image error:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete image',
+      }
+    }
+  }
+
+  // Item CRUD methods
+  async createItem(projectId: string, data: any) {
+    const prisma = this.createPrismaClient(this.env.DB)
+    const service = new ProjectService(prisma)
+
+    try {
+      const item = await service.createItem(projectId, data)
+      return {
+        success: true,
+        data: item,
+      }
+    } catch (error) {
+      console.error('Create item error:', error)
+      return {
+        success: false,
+        error: 'Failed to create item',
+      }
+    }
+  }
+
+  async updateItem(itemId: string, data: any) {
+    const prisma = this.createPrismaClient(this.env.DB)
+    const service = new ProjectService(prisma)
+
+    try {
+      const item = await service.updateItem(itemId, data)
+      return {
+        success: true,
+        data: item,
+      }
+    } catch (error) {
+      console.error('Update item error:', error)
+      return {
+        success: false,
+        error: 'Failed to update item',
+      }
+    }
+  }
+
+  async deleteItem(itemId: string) {
+    const prisma = this.createPrismaClient(this.env.DB)
+    const service = new ProjectService(prisma)
+
+    try {
+      await service.deleteItem(itemId)
+      return {
+        success: true,
+        message: 'Item deleted successfully',
+      }
+    } catch (error) {
+      console.error('Delete item error:', error)
+      return {
+        success: false,
+        error: 'Failed to delete item',
+      }
     }
   }
 }

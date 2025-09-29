@@ -1,4 +1,4 @@
-// Next.js API Route with Cloudflare Service Binding RPC
+// Next.js API Route for individual items with Service Binding RPC
 import { NextRequest, NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
 
@@ -35,22 +35,25 @@ function getAPIBinding(): APIWorkerRPC {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { projectId: string; itemId: string } }
+) {
   try {
     const data = await request.json()
 
     // Service Binding RPC を優先、エラー時は HTTP fallback
     try {
       const api = getAPIBinding()
-      const result = await api.createProject(data)
+      const result = await api.updateItem(params.itemId, data)
 
       return NextResponse.json(result, {
-        status: result.success ? 201 : 500
+        status: result.success ? 200 : 500
       })
     } catch (bindingError) {
       // Fallback: HTTP経由でWorkerに直接リクエスト
-      const workerResponse = await fetch(`${WORKER_URL}/api/projects`, {
-        method: 'POST',
+      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${params.projectId}/items/${params.itemId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
       const result = await workerResponse.json()
 
       return NextResponse.json(result, {
-        status: workerResponse.ok ? 201 : 500
+        status: workerResponse.ok ? 200 : 500
       })
     }
   } catch (error) {
@@ -68,37 +71,30 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: false,
-      error: 'Failed to create project',
+      error: 'Failed to update item',
       message: errorMessage,
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { projectId: string; itemId: string } }
+) {
   try {
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
-
-    if (!id) {
-      return NextResponse.json({
-        success: false,
-        error: 'Project ID is required'
-      }, { status: 400 })
-    }
-
     // Service Binding RPC を優先、エラー時は HTTP fallback
     try {
       const api = getAPIBinding()
-      const result = await api.getProject(id)
+      const result = await api.deleteItem(params.itemId)
 
       return NextResponse.json(result, {
-        status: result.success ? 200 : (result.error === 'Project not found' ? 404 : 500)
+        status: result.success ? 200 : 500
       })
     } catch (bindingError) {
       // Fallback: HTTP経由でWorkerに直接リクエスト
-      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${id}`, {
-        method: 'GET',
+      const workerResponse = await fetch(`${WORKER_URL}/api/projects/${params.projectId}/items/${params.itemId}`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -107,14 +103,17 @@ export async function GET(request: NextRequest) {
       const result = await workerResponse.json()
 
       return NextResponse.json(result, {
-        status: workerResponse.ok ? 200 : (workerResponse.status === 404 ? 404 : 500)
+        status: workerResponse.ok ? 200 : 500
       })
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+
     return NextResponse.json({
       success: false,
-      error: 'Failed to get project',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Failed to delete item',
+      message: errorMessage,
+      timestamp: new Date().toISOString()
     }, { status: 500 })
   }
 }
