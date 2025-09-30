@@ -134,6 +134,9 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
   // 各グループのアニメーション完了状態を追跡
   const [animatedGroups, setAnimatedGroups] = React.useState<Set<string>>(new Set())
 
+  // 個別の選手のアニメーション完了状態を追跡
+  const [animatedPlayers, setAnimatedPlayers] = React.useState<Set<number>>(new Set())
+
   React.useEffect(() => {
     if (currentGroup) {
       setShownGroups(prev => new Set(prev).add(currentGroup))
@@ -153,6 +156,7 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
   React.useEffect(() => {
     if (!isPlaying && !hasPlayedOnce) {
       setAnimatedGroups(new Set())
+      setAnimatedPlayers(new Set())
       setShownGroups(new Set())
       setPreviousIndex(null)
     }
@@ -161,6 +165,13 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
   // アニメーション完了時の処理
   const handleAnimationComplete = React.useCallback(() => {
     setAnimatedGroups(prev => new Set(prev).add(currentGroup))
+    // 現在のグループの全選手をアニメーション完了として記録
+    const currentGroupIndices = positionGroups[currentGroup as keyof typeof positionGroups] || []
+    setAnimatedPlayers(prev => {
+      const newSet = new Set(prev)
+      currentGroupIndices.forEach(index => newSet.add(index))
+      return newSet
+    })
   }, [currentGroup])
 
   // プレースホルダーアイテムを11個作成（アイテムが少ない場合）
@@ -423,9 +434,9 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
                   /* Small yellow card for other groups */
                   <div className="bg-yellow-300 rounded-lg shadow-lg p-2 w-24 h-36 text-center flex flex-col relative">
 
-                    {/* Small Player Image - only show if group has been displayed */}
+                    {/* Small Player Image - show if image exists and has been displayed once */}
                     <div className="flex-1 flex items-center justify-center overflow-hidden rounded-lg">
-                      {hasBeenShown && item.imageUrl ? (
+                      {(hasBeenShown || animatedGroups.has(playerPosition) || animatedPlayers.has(index)) && item.imageUrl ? (
                         <img
                           src={item.imageUrl}
                           alt={item.name}
