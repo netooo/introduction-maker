@@ -357,8 +357,8 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
                 whileHover={isEditMode ? { scale: perspectiveScale * 1.05 } : undefined}
               >
 {isEditMode ? (
-                  /* Edit mode: Always show small yellow cards */
-                  <div className={`${isSelected ? 'bg-blue-400 ring-4 ring-blue-200' : 'bg-yellow-300'} rounded-lg shadow-lg p-2 w-24 h-36 text-center flex flex-col relative transition-all duration-200 hover:shadow-xl`}>
+                  /* Edit mode: Always show small cards */
+                  <div className={`${isSelected ? 'bg-[#02f3b5] ring-4 bg-[02f3b5]' : 'bg-[#aef8a0]'} rounded-lg shadow-lg p-2 w-24 h-36 text-center flex flex-col relative transition-all duration-200 hover:shadow-xl`}>
 
                     {/* Player Image */}
                     <div className="flex-1 flex items-center justify-center overflow-hidden rounded-lg">
@@ -399,7 +399,7 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
                 ) : isInCurrentGroup ? (
                   /* Large focused player card for current group - compensate for Y rotation */
                   <div
-                    className="bg-yellow-300 rounded-2xl shadow-2xl p-4 w-36 h-56 text-center transform flex flex-col relative"
+                    className="bg-[#aef8a0] rounded-2xl shadow-2xl p-4 w-36 h-56 text-center transform flex flex-col relative"
                     style={{ transform: 'rotateY(180deg)' }}
                   >
                     {/* Jersey Number - moved to top-left corner with transparent background */}
@@ -431,8 +431,8 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
                     </div>
                   </div>
                 ) : (
-                  /* Small yellow card for other groups */
-                  <div className="bg-yellow-300 rounded-lg shadow-lg p-2 w-24 h-36 text-center flex flex-col relative">
+                  /* Small card for other groups */
+                  <div className="bg-[#aef8a0] rounded-lg shadow-lg p-2 w-24 h-36 text-center flex flex-col relative">
 
                     {/* Small Player Image - show if image exists and has been displayed once */}
                     <div className="flex-1 flex items-center justify-center overflow-hidden rounded-lg">
@@ -478,7 +478,7 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
 
 {!isEditMode && (
           /* Position Area - Right side with position name display */
-          <div className="absolute right-0 top-0 w-[15%] h-full bg-yellow-400 flex flex-col items-center justify-center" style={{ borderRadius: '60px 0 0 60px' }}>
+          <div className="absolute right-0 top-0 w-[15%] h-full bg-[#33c018] flex flex-col items-center justify-center" style={{ borderRadius: '60px 0 0 60px' }}>
             {/* Position Name Display - Vertical with slide in/out animation */}
             <div className="text-center relative">
               <AnimatePresence mode="wait">
