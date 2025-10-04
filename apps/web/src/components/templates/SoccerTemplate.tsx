@@ -358,7 +358,7 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
               >
 {isEditMode ? (
                   /* Edit mode: Always show small cards */
-                  <div className={`${isSelected ? 'bg-[#02f3b5] ring-4 bg-[02f3b5]' : 'bg-[#aef8a0]'} rounded-lg shadow-lg p-2 w-24 h-36 text-center flex flex-col relative transition-all duration-200 hover:shadow-xl`}>
+                  <div className={`${isSelected ? 'bg-[#7ef6d7] ring-4' : 'bg-[#f4fff4]'} rounded-lg shadow-lg p-2 w-24 h-36 text-center flex flex-col relative transition-all duration-200 hover:shadow-xl`}>
 
                     {/* Player Image */}
                     <div className="flex-1 flex items-center justify-center overflow-hidden rounded-lg">
@@ -399,7 +399,7 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
                 ) : isInCurrentGroup ? (
                   /* Large focused player card for current group - compensate for Y rotation */
                   <div
-                    className="bg-[#aef8a0] rounded-2xl shadow-2xl p-4 w-36 h-56 text-center transform flex flex-col relative"
+                    className="bg-[#f4fff4] rounded-2xl shadow-2xl p-4 w-36 h-56 text-center transform flex flex-col relative"
                     style={{ transform: 'rotateY(180deg)' }}
                   >
                     {/* Jersey Number - moved to top-left corner with transparent background */}
@@ -432,7 +432,7 @@ export const SoccerTemplate: React.FC<TemplateProps> = (props) => {
                   </div>
                 ) : (
                   /* Small card for other groups */
-                  <div className="bg-[#aef8a0] rounded-lg shadow-lg p-2 w-24 h-36 text-center flex flex-col relative">
+                  <div className="bg-[#f4fff4] rounded-lg shadow-lg p-2 w-24 h-36 text-center flex flex-col relative">
 
                     {/* Small Player Image - show if image exists and has been displayed once */}
                     <div className="flex-1 flex items-center justify-center overflow-hidden rounded-lg">

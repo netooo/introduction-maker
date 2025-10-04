@@ -284,7 +284,7 @@ function EditPageContent({ projectId }: { projectId: string }) {
                 {/* インタラクティブ選手カード */}
                 <div className="flex justify-center mb-4">
                   <div className="relative group">
-                    <div className="bg-[#aef8a0] rounded-xl shadow-xl p-3 w-40 h-60 text-center flex flex-col relative border-4 border-[#aef2a0] transition-transform hover:scale-105">
+                    <div className="bg-[#f4fff4] rounded-xl shadow-xl p-3 w-40 h-60 text-center flex flex-col relative border-4 border-[#e2f3df] transition-transform hover:scale-105">
                       {/* 背番号 */}
                       <div className="absolute top-1 left-1 text-3xl font-black leading-none text-transparent" style={{ WebkitTextStroke: '1px #6b7280' }}>
                         {currentIndex + 1}
